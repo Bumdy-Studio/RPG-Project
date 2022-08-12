@@ -1,6 +1,8 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 using UnityEngine.AI;
 
 public class EnemyAI : MonoBehaviour
@@ -11,7 +13,11 @@ public class EnemyAI : MonoBehaviour
 
     NavMeshAgent navMeshAgent;
     float distanceToTarget = Mathf.Infinity;
+    Vector3 directionToTarget;
     bool isProvoked = false;
+
+    public LayerMask targetMask, ObstructionMask;
+ 
 
     
 
@@ -19,14 +25,19 @@ public class EnemyAI : MonoBehaviour
     void Start()
     {
         navMeshAgent = GetComponent<NavMeshAgent>();
+        
     }
 
     // Update is called once per frame
     void Update()
     {
        
+        
         distanceToTarget = Vector3.Distance(transform.position, target.position);
-
+        directionToTarget = (target.position-transform.position).normalized;
+        
+        Debug.DrawRay(transform.position, directionToTarget);
+        RaycastHit hit;
         if (isProvoked)
         {
             EngageTarget();
@@ -34,7 +45,8 @@ public class EnemyAI : MonoBehaviour
         }
         else if (distanceToTarget <= chaseRange)
         {
-            isProvoked = true;
+            if (!Physics.Raycast(transform.position,directionToTarget,out hit,distanceToTarget,ObstructionMask))
+                    isProvoked = true;
         }
     }
 
@@ -42,6 +54,9 @@ public class EnemyAI : MonoBehaviour
     {
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, chaseRange);
+        Handles.DrawLine(transform.position, target.position);
+        
+      
     }
 
     private void EngageTarget() 
@@ -69,8 +84,8 @@ public class EnemyAI : MonoBehaviour
 
     private void chaseTarget() 
     {
-        
-        navMeshAgent.SetDestination(target.position);
+       
+             navMeshAgent.SetDestination(target.position);
     }
     private void attackTarget()
     {
@@ -83,7 +98,7 @@ public class EnemyAI : MonoBehaviour
         Vector3 direction = (target.position - transform.position).normalized;
         Quaternion lookRotation = Quaternion.LookRotation(new Vector3(direction.x, 0, direction.z));
         transform.rotation = Quaternion.Slerp(transform.rotation, lookRotation, Time.deltaTime * turnSpeed);
-
     }
 
+   
 }
