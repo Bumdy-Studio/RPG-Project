@@ -11,12 +11,14 @@ public class EnemyAI : MonoBehaviour
     public Transform target;
     public float chaseRange = 5f;
 
-    NavMeshAgent navMeshAgent;
+    public NavMeshAgent navMeshAgent;
     float distanceToTarget = Mathf.Infinity;
     Vector3 directionToTarget;
     bool isProvoked = false;
 
     public LayerMask targetMask, ObstructionMask;
+
+    ArcherAttackAI ArcherAI;
  
 
     
@@ -24,6 +26,7 @@ public class EnemyAI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        ArcherAI = GetComponent<ArcherAttackAI>();
         navMeshAgent = GetComponent<NavMeshAgent>();
         
     }
@@ -41,12 +44,15 @@ public class EnemyAI : MonoBehaviour
         if (isProvoked)
         {
             EngageTarget();
-
         }
         else if (distanceToTarget <= chaseRange)
         {
             if (!Physics.Raycast(transform.position,directionToTarget,out hit,distanceToTarget,ObstructionMask))
-                    isProvoked = true;
+                isProvoked = true;
+            else 
+            {
+                isProvoked = false;
+            }
         }
     }
 
@@ -55,8 +61,6 @@ public class EnemyAI : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, chaseRange);
         Handles.DrawLine(transform.position, target.position);
-        
-      
     }
 
     private void EngageTarget() 
@@ -72,7 +76,12 @@ public class EnemyAI : MonoBehaviour
         {
             attackTarget();
         }
-    
+
+        if (distanceToTarget > chaseRange)
+        {
+            isProvoked = false;
+        }
+
     }
 
     public void AmIGetShoot() 
@@ -84,13 +93,12 @@ public class EnemyAI : MonoBehaviour
 
     private void chaseTarget() 
     {
-       
-             navMeshAgent.SetDestination(target.position);
+         navMeshAgent.SetDestination(target.position);
     }
+
     private void attackTarget()
     {
-       
-       
+        ArcherAI.AttackPlayer();
     }
 
     private void faceTarget()
