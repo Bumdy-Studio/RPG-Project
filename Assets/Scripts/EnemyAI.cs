@@ -98,7 +98,10 @@ public class EnemyAI : MonoBehaviour
 
     private void attackTarget()
     {
-        ArcherAI.AttackPlayer();
+        if (this.gameObject.tag == "Archer") 
+        {
+            ArcherAI.AttackPlayer();    
+        }
     }
 
     private void faceTarget()
